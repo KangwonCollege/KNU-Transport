@@ -1,16 +1,4 @@
-# knu_transport
-
-A new Flutter project.
-
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+# Project KNU-Transport
+강원대학교(춘천) 교내 교통도우미 프로젝트
+* 교내 순환버스 (주변 정류소, 예상 도착 시간)
+* 춘천 시내버스(300번, 17번) 실시간 도착 정보
