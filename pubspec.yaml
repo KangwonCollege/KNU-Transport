@@ -90,3 +90,6 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+  assets:
+    - assets/data/inner_bus/station_info.json
+    - assets/data/inner_bus/timetable.json
