@@ -1,12 +1,10 @@
 
-import 'dart:ffi';
-
 class StationInfo {
   final int id;
   final String name;
   final int direction;
-  final Double posX;
-  final Double posY;
+  final double posX;
+  final double posY;
 
   const StationInfo({
     required this.id,
@@ -20,8 +18,8 @@ class StationInfo {
     : id = json['id'] as int,
     name = json['name'] as String,
     direction = json['direction'] as int,
-    posX = json['posX'] as Double,
-    posY = json['posY'] as Double;
+    posX = json['posX'] as double,
+    posY = json['posY'] as double;
 
 }
 
