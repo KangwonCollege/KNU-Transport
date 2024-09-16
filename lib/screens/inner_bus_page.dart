@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:knu_transport/components/inner_bus_map.dart';
 import 'package:knu_transport/components/inner_bus_arrival.dart';
 
