@@ -93,3 +93,4 @@ flutter:
   assets:
     - assets/data/inner_bus/station_info.json
     - assets/data/inner_bus/timetable.json
+    - assets/data/inner_bus/route.json
