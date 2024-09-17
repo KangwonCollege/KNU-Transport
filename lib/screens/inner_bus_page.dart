@@ -20,7 +20,12 @@ class _InnerBusPageState extends State<InnerBusPage> {
   }
 
   late PageController _pageController;
+  late TabController _tabController;
   late NaverMapController _mapController;
+
+  late var initalizeConfiguration =
+      Future.wait([loadStationInfo(), loadRouteInfo()]);
+  late List<StationInfo> stationInfo;
 
   @override
   Widget build(BuildContext context) {
@@ -37,89 +42,97 @@ class _InnerBusPageState extends State<InnerBusPage> {
       tilt: 0,
     );
 
-    return Scaffold(
-      backgroundColor: Color(0xffefefff),
-      body: FutureBuilder<List<List<StationInfo>>>(
-        future: Future.wait([loadStationInfo()]),
-        builder: (BuildContext context, AsyncSnapshot snapshot) {
-          if (snapshot.hasError) print(snapshot.error);
-          if (!snapshot.hasData) return const CircularProgressIndicator();
+    initalizeConfiguration.then((result) {
+      setState(() {
+        stationInfo = result[0] as List<StationInfo>;
+      });
+    });
 
-          List<StationInfo> stations = snapshot.data[0];
+    return Scaffold(
+        backgroundColor: Color(0xffefefff),
+        body: () {
+          if (stationInfo.isEmpty) return const CircularProgressIndicator();
+
+          // _tabController = TabController(length: stations.length, vsync: vsync)
 
           return SizedBox(
-            width: pageSize.width,
-            height: pageSize.height,
-            child: Column(
-              children: [
-                SizedBox(
-                  width: mapSize.width,
-                  height: mapSize.height,
-                  child: NaverMap(
-                    options: NaverMapViewOptions(
-                      initialCameraPosition: cameraPosition,
+              width: pageSize.width,
+              height: pageSize.height,
+              child: Column(
+                children: [
+                  SizedBox(
+                    width: mapSize.width,
+                    height: mapSize.height,
+                    child: NaverMap(
+                      options: NaverMapViewOptions(
+                        initialCameraPosition: cameraPosition,
+                      ),
+                      onMapReady: mapOnReady,
                     ),
-                    onMapReady: mapOnReady,
                   ),
-                ),
-
-                SizedBox(
-                  width: pageViewerSize.width,
-                  height: pageViewerSize.height,
-                  child: PageView.builder(
-                      controller: _pageController,
-                      itemCount: stations.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        return Padding(
-                          padding: const EdgeInsets.all(15),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.end,
+                  SizedBox(
+                      width: pageViewerSize.width,
+                      height: pageViewerSize.height,
+                      child: PageView.builder(
+                          controller: _pageController,
+                          itemCount: stationInfo.length,
+                          itemBuilder: (BuildContext context, int index) {
+                            return Padding(
+                              padding: const EdgeInsets.all(15),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    stations[index].name,
-                                    style: const TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xff000000),
-                                    ),
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Text(
+                                        stationInfo[index].name,
+                                        style: const TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xff000000),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      index <= stationInfo.length - 2
+                                          ? Text(
+                                              "${stationInfo[index + 1].name} 방향",
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.bold,
+                                                color: Color(0xaa303030),
+                                              ),
+                                            )
+                                          : const SizedBox.shrink()
+                                    ],
                                   ),
-                                  const SizedBox(width: 6),
-                                  index <= stations.length - 2 ? Text(
-                                    "${stations[index + 1].name} 방향",
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xaa303030),
-                                    ),
-                                  ) : const SizedBox.shrink()
+
+                                  Container(
+                                      alignment: Alignment.centerRight,
+                                      child: const Text(
+                                          "HH:MM 후 (N회차 버스) 도착 예정",
+                                          textAlign: TextAlign.end))
+
+                                  // HH:MM 분후 (N회차 버스) 도착 예정
+                                  // [버튼] 역방향 정류장 표시
                                 ],
-                              )
-                            ],
-                          ),
-                        );
-                      }
-                  )
-                )
-              ],
-            )
-          );
-        }
-      )
-    );
+                              ),
+                            );
+                          }))
+                ],
+              ));
+        }());
   }
 
   void mapOnReady(NaverMapController controller) {
     _mapController = controller;
-    controller.addOverlay(
-      NPathOverlay(id: "test", coords: [
-        NLatLng(37.86552754326239, 127.74261278090911),
-        NLatLng(37.863524482283474, 127.74414972615862),
-        NLatLng(37.86516311798883, 127.74577758329113),
-      ])
-    );
+
+    // Draw a bus route to map.
+    loadRouteInfo().then((routeInfo) {
+      controller.addOverlay(NPathOverlay(
+          id: "inner_bus_route",
+          coords: routeInfo.map((x) => NLatLng(x[0], x[1])).toList()));
+    });
 
     // final circleOverlay = NCircleOverlay(id: "test", center: NLatLng(37.86552754326239, 127.74261278090911), radius: 20);
     // circleOverlay.setOnTapListener((NCircleOverlay overlay) {
@@ -128,11 +141,18 @@ class _InnerBusPageState extends State<InnerBusPage> {
     // });
     // controller.addOverlay(circleOverlay);
 
-    const Widget text = Text("테스트", style: TextStyle(color: Color(0xff000000), fontSize: 20));
-    NOverlayImage.fromWidget(widget: text,
-        size: NSize.fromSize(_textSize("테스트", TextStyle(color: Color(0xff000000), fontSize: 20))), context: context).then((NOverlayImage result) {
-      var marker = NMarker(id: "icon_test",
-          position: const NLatLng(37.86552754326239, 127.74261278090911), icon: result);
+    const Widget text =
+        Text("테스트", style: TextStyle(color: Color(0xff000000), fontSize: 20));
+    NOverlayImage.fromWidget(
+            widget: text,
+            size: NSize.fromSize(_textSize(
+                "테스트", TextStyle(color: Color(0xff000000), fontSize: 20))),
+            context: context)
+        .then((NOverlayImage result) {
+      var marker = NMarker(
+          id: "icon_test",
+          position: const NLatLng(37.86552754326239, 127.74261278090911),
+          icon: result);
       controller.addOverlay(marker);
     });
   }
@@ -143,9 +163,17 @@ class _InnerBusPageState extends State<InnerBusPage> {
     return station;
   }
 
+  Future<List<List<double>>> loadRouteInfo() async {
+    List<List<double>> routeInfo =
+        await loadJson("assets/data/inner_bus/routeInfo.json");
+    return routeInfo;
+  }
+
   Size _textSize(String text, TextStyle style) {
     final TextPainter textPainter = TextPainter(
-        text: TextSpan(text: text, style: style), maxLines: 1, textDirection: TextDirection.ltr)
+        text: TextSpan(text: text, style: style),
+        maxLines: 1,
+        textDirection: TextDirection.ltr)
       ..layout(minWidth: 0, maxWidth: double.infinity);
     return textPainter.size;
   }
