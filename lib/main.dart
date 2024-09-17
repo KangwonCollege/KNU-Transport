@@ -4,11 +4,11 @@ import 'package:knu_transport/screens/inner_bus_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();  
-  // await NaverMapSdk.instance.initialize(
-  //     clientId: '',
-  //     onAuthFailed: (ex) {
-  //       print("********* 네이버맵 인증오류 : $ex *********");
-  //     });
+  await NaverMapSdk.instance.initialize(
+      clientId: 'p6aoosf5dc',
+      onAuthFailed: (ex) {
+        print("********* 네이버맵 인증오류 : $ex *********");
+      });
 
   runApp(const MyApp());
 }
