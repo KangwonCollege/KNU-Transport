@@ -8,13 +8,15 @@ class InnerBusMap extends StatelessWidget{
 
   @override
   Widget build(BuildContext context) {
-    return const Card(
-      child: Column(
-        children: <Widget>[
-          // NaverMap()
-        ], // 네이버 맵을 활용하여 버스의 노선도를 그려줄 예정, 
-        // inner_bus_arriaval의 pageCount를 이용하여 그 정류장으로 지도의 카메라를 조정하려고 함. 
-      ),
+    final mediaQuery = MediaQuery.of(context);
+    final componentSize = Size(mediaQuery.size.width - 32, mediaQuery.size.height - 300);
+
+    return SizedBox(
+        width: componentSize.width,
+        height: componentSize.height,
+        child: const Card(
+          child: NaverMap()
+        )
     );
   }
 }
