@@ -26,8 +26,12 @@ class InnerBusArrival extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    final componentSize = Size(mediaQuery.size.width - 32, 0);
+
     return SizedBox(
-      height: 200,
+      width: componentSize.width,
+      height: 100,
       child: PageView.builder(
         itemCount: station.length, // 정류장의 갯수
         controller: controller, // 사용자의 위치를 기준으로 가장 가까운 정류소를 위치 시킬 예정
