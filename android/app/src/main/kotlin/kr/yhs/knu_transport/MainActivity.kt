@@ -1,4 +1,4 @@
-package com.example.knu_transport
+package kr.yhs.knu_transport
 
 import io.flutter.embedding.android.FlutterActivity
 
