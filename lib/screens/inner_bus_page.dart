@@ -44,8 +44,7 @@ class _InnerBusPageState extends ConsumerState<InnerBusPage> {
     // PageView Component
     final pageViewerSize = Size(mediaQuery.size.width, 200);
     final nowTime = DateTime.now();
-
-    // final timetable = ref.watch()
+    final timetable = ref.watch(dataTimetableProvider);
 
     return Scaffold(
         backgroundColor: Color(0xffefefff),
@@ -77,6 +76,13 @@ class _InnerBusPageState extends ConsumerState<InnerBusPage> {
                           controller: _pageController,
                           itemCount: stationInfo.length,
                           itemBuilder: (BuildContext context, int index) {
+                            if (!timetable.hasValue) return const CircularProgressIndicator();
+
+                            var currentTimetable = timetable.value![index]
+                              .map(nowTime.difference)
+                              .where((dt) => !dt.isNegative).toList();
+                            currentTimetable.sort((dt1, dt2) => dt1.compareTo(dt2));
+
                             return Padding(
                               padding: const EdgeInsets.all(20),
                               child: Column(
@@ -107,10 +113,11 @@ class _InnerBusPageState extends ConsumerState<InnerBusPage> {
                                     ],
                                   ),
                                   const Spacer(flex: 1),
+                                  currentTimetable.isEmpty ?
                                   Container(
                                       alignment: Alignment.centerRight,
                                       child: const Text(
-                                          "HH:MM 후 (N회차 버스) 도착 예정",
+                                          "운행 종료",
                                           textAlign: TextAlign.end,
                                           style: TextStyle(
                                             fontSize: 18,
@@ -118,7 +125,19 @@ class _InnerBusPageState extends ConsumerState<InnerBusPage> {
                                             color: Color(0xff1a1a1a),
                                           ),
                                         )
-                                      )
+                                      ) :
+                                  Container(
+                                      alignment: Alignment.centerRight,
+                                      child: Text(
+                                          "${currentTimetable[0].inHours}:${currentTimetable[0].inMinutes} 후 (N회차 버스) 도착 예정",
+                                          textAlign: TextAlign.end,
+                                          style: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w500,
+                                            color: Color(0xff1a1a1a),
+                                          ),
+                                        )
+                                      )    
 
                                   // HH:MM 분후 (N회차 버스) 도착 예정
                                   // [버튼] 역방향 정류장 표시
