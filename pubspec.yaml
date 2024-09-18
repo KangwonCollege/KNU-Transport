@@ -37,6 +37,8 @@ dependencies:
   cupertino_icons: ^1.0.8
   flutter_naver_map: ^1.2.3+1
   location: ^7.0.0
+  flutter_riverpod: ^2.5.1
+  riverpod_annotation: ^2.3.5
 
 dev_dependencies:
   flutter_test:
@@ -48,6 +50,10 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^4.0.0
+  riverpod_generator: ^2.4.3
+  build_runner: ^2.4.12
+  custom_lint: ^0.6.7
+  riverpod_lint: ^2.3.13
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
