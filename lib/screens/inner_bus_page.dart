@@ -29,10 +29,9 @@ class _InnerBusPageState extends ConsumerState<InnerBusPage> {
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
     final pageSize = Size(mediaQuery.size.width, mediaQuery.size.height);
-    final pageViewerSize = Size(mediaQuery.size.width, 200);
-    final mapSize = Size(mediaQuery.size.width, mediaQuery.size.height - 200);
 
-    // Map Options
+    // Map Component
+    final mapSize = Size(mediaQuery.size.width, mediaQuery.size.height - 200);
     const cameraPosition = NCameraPosition(
       target: NLatLng(37.8670061, 127.7437401),
       zoom: 14.5,
@@ -41,6 +40,12 @@ class _InnerBusPageState extends ConsumerState<InnerBusPage> {
     );
 
     final station = ref.watch(dataStationInfoProvider);
+
+    // PageView Component
+    final pageViewerSize = Size(mediaQuery.size.width, 200);
+    final nowTime = DateTime.now();
+
+    // final timetable = ref.watch()
 
     return Scaffold(
         backgroundColor: Color(0xffefefff),
@@ -101,12 +106,19 @@ class _InnerBusPageState extends ConsumerState<InnerBusPage> {
                                           : const SizedBox.shrink()
                                     ],
                                   ),
-
+                                  const Spacer(flex: 1),
                                   Container(
                                       alignment: Alignment.centerRight,
                                       child: const Text(
                                           "HH:MM 후 (N회차 버스) 도착 예정",
-                                          textAlign: TextAlign.end))
+                                          textAlign: TextAlign.end,
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w500,
+                                            color: Color(0xff1a1a1a),
+                                          ),
+                                        )
+                                      )
 
                                   // HH:MM 분후 (N회차 버스) 도착 예정
                                   // [버튼] 역방향 정류장 표시
