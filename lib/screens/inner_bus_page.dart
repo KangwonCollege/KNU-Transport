@@ -2,17 +2,19 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:knu_transport/models/station_info.dart';
+import 'package:knu_transport/providers/initalize.dart';
 import 'package:knu_transport/utilities/load_asset.dart';
 
-class InnerBusPage extends StatefulWidget {
+class InnerBusPage extends ConsumerStatefulWidget {
   const InnerBusPage({super.key});
 
   @override
   _InnerBusPageState createState() => _InnerBusPageState();
 }
 
-class _InnerBusPageState extends State<InnerBusPage> {
+class _InnerBusPageState extends ConsumerState<InnerBusPage> {
   @override
   void initState() {
     super.initState();
@@ -22,10 +24,6 @@ class _InnerBusPageState extends State<InnerBusPage> {
   late PageController _pageController;
   late TabController _tabController;
   late NaverMapController _mapController;
-
-  late var initalizeConfiguration =
-      Future.wait([loadStationInfo(), loadRouteInfo()]);
-  late List<StationInfo> stationInfo;
 
   @override
   Widget build(BuildContext context) {
@@ -42,17 +40,14 @@ class _InnerBusPageState extends State<InnerBusPage> {
       tilt: 0,
     );
 
-    initalizeConfiguration.then((result) {
-      setState(() {
-        stationInfo = result[0] as List<StationInfo>;
-      });
-    });
+    final station = ref.watch(dataStationInfoProvider);
 
     return Scaffold(
         backgroundColor: Color(0xffefefff),
         body: () {
-          if (stationInfo.isEmpty) return const CircularProgressIndicator();
-
+          if (!station.hasValue || station.value == null)
+            return const CircularProgressIndicator();
+          var stationInfo = station.value!;
           // _tabController = TabController(length: stations.length, vsync: vsync)
 
           return SizedBox(
@@ -78,7 +73,7 @@ class _InnerBusPageState extends State<InnerBusPage> {
                           itemCount: stationInfo.length,
                           itemBuilder: (BuildContext context, int index) {
                             return Padding(
-                              padding: const EdgeInsets.all(15),
+                              padding: const EdgeInsets.all(20),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -88,7 +83,7 @@ class _InnerBusPageState extends State<InnerBusPage> {
                                       Text(
                                         stationInfo[index].name,
                                         style: const TextStyle(
-                                          fontSize: 20,
+                                          fontSize: 24,
                                           fontWeight: FontWeight.bold,
                                           color: Color(0xff000000),
                                         ),
@@ -98,7 +93,7 @@ class _InnerBusPageState extends State<InnerBusPage> {
                                           ? Text(
                                               "${stationInfo[index + 1].name} 방향",
                                               style: const TextStyle(
-                                                fontSize: 14,
+                                                fontSize: 16,
                                                 fontWeight: FontWeight.bold,
                                                 color: Color(0xaa303030),
                                               ),
@@ -128,45 +123,50 @@ class _InnerBusPageState extends State<InnerBusPage> {
     _mapController = controller;
 
     // Draw a bus route to map.
-    loadRouteInfo().then((routeInfo) {
+    final routeInfo = ref.watch(dataRouteInfoProvider);
+    routeInfo.whenData((routeInfo) {
       controller.addOverlay(NPathOverlay(
           id: "inner_bus_route",
           coords: routeInfo.map((x) => NLatLng(x[0], x[1])).toList()));
     });
 
-    // final circleOverlay = NCircleOverlay(id: "test", center: NLatLng(37.86552754326239, 127.74261278090911), radius: 20);
-    // circleOverlay.setOnTapListener((NCircleOverlay overlay) {
-    //   final infoWindow = NInfoWindow.onMap(id: "test", position: NLatLng(37.86552754326239, 127.74261278090911), text: "인포윈도우 텍스트");
-    //   controller.addOverlay(infoWindow);
-    // });
-    // controller.addOverlay(circleOverlay);
+    // Draw a station to map.
+    final stationInfo = ref.watch(dataStationInfoProvider);
+    stationInfo.whenData((stationInfo) {
+      for (StationInfo station in stationInfo) {
+        // if (station.direction == 1) continue;
+        final stationPosition = NLatLng(station.posX, station.posY);
+        final stationOverlay = NCircleOverlay(
+          id: "inner_bus_station_${station.id}",
+          center: stationPosition,
+          radius: 10
+        );
 
-    const Widget text =
-        Text("테스트", style: TextStyle(color: Color(0xff000000), fontSize: 20));
-    NOverlayImage.fromWidget(
-            widget: text,
-            size: NSize.fromSize(_textSize(
-                "테스트", TextStyle(color: Color(0xff000000), fontSize: 20))),
-            context: context)
-        .then((NOverlayImage result) {
-      var marker = NMarker(
-          id: "icon_test",
-          position: const NLatLng(37.86552754326239, 127.74261278090911),
-          icon: result);
-      controller.addOverlay(marker);
+        const TextStyle style = TextStyle(
+            color: Color(0xff000000),
+            fontSize: 16
+        );
+        final Widget stationTextWidget = Text(
+          station.name,
+          style: style
+        );
+        NOverlayImage.fromWidget(
+          widget: stationTextWidget,
+          size: NSize.fromSize(
+            _textSize(station.name, style)  
+          ),
+          context: context
+        ).then((NOverlayImage overlay) {
+          var marker = NMarker(
+            id: "inner_bus_station_${station.id}_text",
+            position: stationPosition.offsetByMeter(northMeter:-10),
+            icon: overlay
+          );
+          controller.addOverlay(marker);
+        });
+        controller.addOverlay(stationOverlay);
+      }
     });
-  }
-
-  Future<List<StationInfo>> loadStationInfo() async {
-    List<StationInfo> station = await loadAssets(
-        "assets/data/inner_bus/station_info.json", StationInfo.fromJson);
-    return station;
-  }
-
-  Future<List<List<double>>> loadRouteInfo() async {
-    List<List<double>> routeInfo =
-        await loadJson("assets/data/inner_bus/routeInfo.json");
-    return routeInfo;
   }
 
   Size _textSize(String text, TextStyle style) {
