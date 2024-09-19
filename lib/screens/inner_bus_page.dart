@@ -49,8 +49,12 @@ class _InnerBusPageState extends ConsumerState<InnerBusPage> {
     return Scaffold(
         backgroundColor: Color(0xffefefff),
         body: () {
-          if (!station.hasValue || station.value == null)
+          if (station.hasError) {
+            return Text(station.error as String);
+          }
+          if (!station.hasValue || station.value == null) {
             return const CircularProgressIndicator();
+          }
           var stationInfo = station.value!;
           // _tabController = TabController(length: stations.length, vsync: vsync)
 

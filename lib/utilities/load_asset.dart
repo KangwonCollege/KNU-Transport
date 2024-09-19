@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/services.dart';
-import 'package:knu_transport/models/station_info.dart';
 
 Future<T> loadJson<T>(String location) async {
   String source = await rootBundle.loadString(location);
