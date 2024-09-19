@@ -8,13 +8,13 @@ Future<T> loadJson<T>(String location) async {
 }
 
 Future<T> loadAsset<T>(
-    String location, T Function(Map<String, dynamic>) parsingFunction) async {
+  String location, T Function(Map<String, dynamic>) parsingFunction) async {
   var source = await loadJson<Map<String, dynamic>>(location);
   return parsingFunction(source);
 }
 
 Future<List<T>> loadAssets<T>(
-    String location, T Function(Map<String, dynamic>) parsingFunction) async {
-  var source = await loadJson<List<Map<String, dynamic>>>(location);
+  String location, T Function(Map<String, dynamic>) parsingFunction) async {
+  var source = await loadJson<List<dynamic>>(location);
   return source.map((e) => parsingFunction(e)).toList();
 }
