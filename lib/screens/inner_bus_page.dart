@@ -50,7 +50,7 @@ class _InnerBusPageState extends ConsumerState<InnerBusPage> {
         backgroundColor: Color(0xffefefff),
         body: () {
           if (station.hasError) {
-            return Text(station.error as String);
+            return Text(station.error.toString());
           }
           if (!station.hasValue || station.value == null) {
             return const CircularProgressIndicator();
