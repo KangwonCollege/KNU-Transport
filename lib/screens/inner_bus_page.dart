@@ -44,14 +44,13 @@ class _InnerBusPageState extends ConsumerState<InnerBusPage> {
     // PageView Component
     final pageViewerSize = Size(mediaQuery.size.width, 200);
     final nowTime = DateTime.now();
-    final timetable = ref.watch(dataTimetableProvider);
 
     return Scaffold(
         backgroundColor: Color(0xffefefff),
         body: () {
-          if (station.hasError) {
-            return Text(station.error.toString());
-          }
+                            if (station.hasError) {
+                              return Text(station.error.toString());
+                            }
           if (!station.hasValue || station.value == null) {
             return const CircularProgressIndicator();
           }
@@ -63,16 +62,16 @@ class _InnerBusPageState extends ConsumerState<InnerBusPage> {
               height: pageSize.height,
               child: Column(
                 children: [
-                  SizedBox(
-                    width: mapSize.width,
-                    height: mapSize.height,
-                    child: NaverMap(
-                      options: NaverMapViewOptions(
-                        initialCameraPosition: cameraPosition,
-                      ),
-                      onMapReady: mapOnReady,
-                    ),
-                  ),
+                  // SizedBox(
+                  //   width: mapSize.width,
+                  //   height: mapSize.height,
+                  //   child: NaverMap(
+                  //     options: NaverMapViewOptions(
+                  //       initialCameraPosition: cameraPosition,
+                  //     ),
+                  //     onMapReady: mapOnReady,
+                  //   ),
+                  // ),
                   SizedBox(
                       width: pageViewerSize.width,
                       height: pageViewerSize.height,
@@ -80,13 +79,6 @@ class _InnerBusPageState extends ConsumerState<InnerBusPage> {
                           controller: _pageController,
                           itemCount: stationInfo.length,
                           itemBuilder: (BuildContext context, int index) {
-                            if (!timetable.hasValue) return const CircularProgressIndicator();
-
-                            var currentTimetable = timetable.value![index]
-                              .map(nowTime.difference)
-                              .where((dt) => !dt.isNegative).toList();
-                            currentTimetable.sort((dt1, dt2) => dt1.compareTo(dt2));
-
                             return Padding(
                               padding: const EdgeInsets.all(20),
                               child: Column(
@@ -117,7 +109,7 @@ class _InnerBusPageState extends ConsumerState<InnerBusPage> {
                                     ],
                                   ),
                                   const Spacer(flex: 1),
-                                  currentTimetable.isEmpty ?
+                                  1 == 1 ? // currentTimetable.isEmpty ?
                                   Container(
                                       alignment: Alignment.centerRight,
                                       child: const Text(
@@ -133,7 +125,7 @@ class _InnerBusPageState extends ConsumerState<InnerBusPage> {
                                   Container(
                                       alignment: Alignment.centerRight,
                                       child: Text(
-                                          "${currentTimetable[0].inHours}:${currentTimetable[0].inMinutes} 후 (N회차 버스) 도착 예정",
+                                          "0" // "${currentTimetable[0].inHours}:${currentTimetable[0].inMinutes} 후 (N회차 버스) 도착 예정",
                                           textAlign: TextAlign.end,
                                           style: const TextStyle(
                                             fontSize: 18,
