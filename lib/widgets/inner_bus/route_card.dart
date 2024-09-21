@@ -114,11 +114,11 @@ class _RouteCardState extends ConsumerState<RouteCard> {
           const Spacer(flex: 1),
           currentTimetable.isNotEmpty
               ? description(
-                  "${timetableFormat(currentTimetable[0])} (${currentTimetable[0].sessionIndex}회차 버스) 출발 예정")
+                  "${timetableFormat(currentTimetable[0])} (${currentTimetable[0].sessionIndex + 1}회차 버스) 출발 예정")
               : description("운행 종료"),
           currentTimetable.length > 1
               ? description(
-                  "${timetableFormat(currentTimetable[1])} (${currentTimetable[1].sessionIndex}회차 버스) 출발 예정")
+                  "${timetableFormat(currentTimetable[1])} (${currentTimetable[1].sessionIndex + 1}회차 버스) 출발 예정")
               : const SizedBox.shrink(),
         ],
       ),
