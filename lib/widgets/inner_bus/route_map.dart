@@ -8,8 +8,9 @@ import 'package:knu_transport/utilities/text_size.dart';
 class RouteMap extends ConsumerStatefulWidget {
   final void Function(NaverMapController)? onMapReady;
   final void Function(NaverMapController, int)? onStationClick;
+  final Widget? floatingButton;
 
-  const RouteMap({super.key, this.onMapReady, this.onStationClick});
+  const RouteMap({super.key, this.onMapReady, this.onStationClick, this.floatingButton});
 
   @override
   _RouteMapState createState() => _RouteMapState();
@@ -23,7 +24,7 @@ class _RouteMapState extends ConsumerState<RouteMap> {
     final mediaQuery = MediaQuery.of(context);
     final mapSize = Size(mediaQuery.size.width, mediaQuery.size.height - 200);
     const cameraPosition = NCameraPosition(
-      target: NLatLng(37.8670061, 127.7437401),
+      target: NLatLng(37.867769, 127.744840),
       zoom: 14.5,
       bearing: 0,
       tilt: 0,
@@ -32,11 +33,15 @@ class _RouteMapState extends ConsumerState<RouteMap> {
     return SizedBox(
       width: mapSize.width,
       height: mapSize.height,
-      child: NaverMap(
-        options: const NaverMapViewOptions(
-          initialCameraPosition: cameraPosition,
+      child: Scaffold(
+        body: NaverMap(
+          options: const NaverMapViewOptions(
+            initialCameraPosition: cameraPosition,
+          ),
+          onMapReady: mapOnReady,
         ),
-        onMapReady: mapOnReady,
+        floatingActionButton: widget.floatingButton,
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       ),
     );
   }
@@ -64,62 +69,69 @@ class _RouteMapState extends ConsumerState<RouteMap> {
       const TextStyle style = TextStyle(color: Color(0xff000000), fontSize: 16);
       Map<int, StationInfo> refinedStation = {};
       for (StationInfo station in stationInfo) {
-        if (!refinedStation.containsKey(station.id)) {
-          refinedStation[station.id] = station;
-        } else {
+        if (refinedStation.containsKey(station.id)) {
           StationInfo reversedStation = refinedStation[station.id]!;
-          final stationPosition = NLatLng(
-              (reversedStation.posX + station.posX) / 2,
-              (reversedStation.posY + station.posY) / 2);
+          NLatLng position = NLatLng(
+            (station.posX + reversedStation.posX) / 2,
+            (station.posY + reversedStation.posY) / 2
+          );
 
-          // Station Overlay
+          StationInfo stationD0 = station.direction == 0 ? station : reversedStation;
+          StationInfo stationD1 = station.direction == 1 ? station : reversedStation;
+          
           final stationOverlay = NCircleOverlay(
               id: "inner_bus_station_${station.id}",
-              center: stationPosition,
+              center: position,
               radius: 8,
               outlineWidth: 2);
           controller.addOverlay(stationOverlay);
 
-          // Station Text Overlay
-          final Widget stationTextWidget = Text(station.name, style: style);
-          NOverlayImage.fromWidget(
-                  widget: stationTextWidget,
-                  size: NSize.fromSize(getTextSize(station.name, style)),
-                  context: context)
-              .then((NOverlayImage overlay) {
-            var marker = NMarker(
-                id: "inner_bus_station_${station.id}_${station.direction}_text",
-                position: stationPosition.offsetByMeter(
-                    northMeter: station.direction == 1 ? -12 : 12),
-                icon: overlay);
-            if (widget.onStationClick != null) {
-              marker.setOnTapListener(
-                  (_) => widget.onStationClick!(controller, station.id));
-            }
-            controller.addOverlay(marker);
-          });
-
+          addTextOverlay(
+            controller: controller,
+            id: "inner_bus_station_${stationD0.id}_${stationD0.direction}_text",
+            text: stationD0.name,
+            style: style,
+            position: position.offsetByMeter(northMeter: -12),
+          );
           if (reversedStation.name != station.name) {
-            final Widget reversedStationTextWidget = Text(station.name, style: style);
-            NOverlayImage.fromWidget(
-                    widget: reversedStationTextWidget,
-                    size: NSize.fromSize(getTextSize(station.name, style)),
-                    context: context)
-                .then((NOverlayImage overlay) {
-              var marker = NMarker(
-                  id: "inner_bus_station_${station.id}_${station.direction}_text",
-                  position: stationPosition.offsetByMeter(
-                      northMeter: station.direction == 1 ? -12 : 12),
-                  icon: overlay);
-              if (widget.onStationClick != null) {
-                marker.setOnTapListener(
-                    (_) => widget.onStationClick!(controller, station.id));
-              }
-              controller.addOverlay(marker);
-            });
+            addTextOverlay(
+              controller: controller,
+              id: "inner_bus_station_${stationD1.id}_${stationD1.direction}_text",
+              text: stationD1.name,
+              style: style,
+              position: position.offsetByMeter(northMeter: 12),
+            );
           }
+        } else {
+          refinedStation[station.id] = station;
         }
       }
+    });
+  }
+  
+  void addTextOverlay({
+    required NaverMapController controller,
+    required String id,
+    required String text,
+    required TextStyle style,
+    required NLatLng position,
+    dynamic Function(NMarker)? onClick
+  }) {
+    final Widget textWidget = Text(text, style: style);
+    NOverlayImage.fromWidget(
+      widget: textWidget,
+      size: NSize.fromSize(getTextSize(text, style)),
+      context: context
+    ).then((NOverlayImage overlay) {
+      var marker = NMarker(
+        id: id,
+        position: position,
+        icon: overlay
+      );
+      if (onClick != null) {
+        marker.setOnTapListener(onClick);
+        }
+      controller.addOverlay(marker);
     });
   }
 }
