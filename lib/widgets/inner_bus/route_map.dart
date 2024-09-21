@@ -85,6 +85,9 @@ class _RouteMapState extends ConsumerState<RouteMap> {
               radius: 8,
               outlineWidth: 2);
           stationOverlay.setGlobalZIndex(-9999);
+          if (widget.onStationClick != null) {
+            stationOverlay.setOnTapListener((_) => widget.onStationClick!(controller, station.id));
+          }
           controller.addOverlay(stationOverlay);
 
           addTextOverlay(

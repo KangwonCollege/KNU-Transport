@@ -41,8 +41,6 @@ class _InnerBusPageState extends ConsumerState<InnerBusPage> {
     final mediaQuery = MediaQuery.of(context);
     final pageSize = Size(mediaQuery.size.width, mediaQuery.size.height);
 
-    final routeInfo = ref.watch(dataRouteInfoProvider);
-
     return Scaffold(
         backgroundColor: Color(0xffefefff),
         body: SizedBox(
@@ -55,6 +53,7 @@ class _InnerBusPageState extends ConsumerState<InnerBusPage> {
                   onMapReady: (controller) {
                     _mapController = controller;
                   },
+                  onStationClick: onStationOverlayClick,
                   floatingButton: MultiFloatingButton(
                     icon: const [Icons.navigation, Icons.my_location],
                       onClickListener: (index) {
@@ -67,6 +66,16 @@ class _InnerBusPageState extends ConsumerState<InnerBusPage> {
                 )
               ],
             )));
+  }
+
+  void onStationOverlayClick(NaverMapController controller, int stationId) {
+    var stationInfo = ref.watch(dataStationInfoProvider);
+    stationInfo.whenData((data) {
+      int currentDirection = data[currentPage].direction;
+      StationInfo station = data.where((e) => e.direction == currentDirection && e.id == stationId).first;
+      int newIndex = data.indexOf(station);
+      _pageController.animateToPage(newIndex);
+    });
   }
 
   void getLocationEvnet([bool initalize = false]) async {
@@ -124,7 +133,7 @@ class _InnerBusPageState extends ConsumerState<InnerBusPage> {
       cameraPosition.setAnimation(
         animation: NCameraAnimation.easing,
         duration: const Duration(seconds: 2)
-      );
+      );  
       _mapController.updateCamera(cameraPosition);
     });
   }
