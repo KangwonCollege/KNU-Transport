@@ -7,8 +7,13 @@ import 'package:knu_transport/widgets/text_skeleton.dart';
 
 class RouteCard extends ConsumerStatefulWidget {
   final CarouselSliderController pageController;
+  final void Function(int index)? onPageChanged;
 
-  const RouteCard({super.key, required this.pageController});
+  const RouteCard({
+    super.key,
+    required this.pageController,
+    this.onPageChanged
+  });
 
   @override
   _RouteCardState createState() => _RouteCardState();
@@ -81,6 +86,10 @@ class _RouteCardState extends ConsumerState<RouteCard> {
   Widget item(BuildContext context, int index, int realIndex) {
     final timetable = ref.watch(dataTimetableProvider);
     final station = ref.watch(dataStationInfoProvider);
+
+    if (index != -1 && widget.onPageChanged != null) {
+      widget.onPageChanged!(index);
+    }
 
     // title
     final name = station.value?[index].name ?? "새롬관(회차)";
