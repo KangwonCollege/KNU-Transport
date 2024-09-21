@@ -6,6 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:knu_transport/models/station_info.dart';
 import 'package:knu_transport/providers/initalize.dart';
 import 'package:knu_transport/utilities/load_asset.dart';
+import 'package:knu_transport/utilities/text_size.dart';
+import 'package:knu_transport/widgets/inner_bus/route_card.dart';
 
 class InnerBusPage extends ConsumerStatefulWidget {
   const InnerBusPage({super.key});
@@ -39,22 +41,9 @@ class _InnerBusPageState extends ConsumerState<InnerBusPage> {
       tilt: 0,
     );
 
-    final station = ref.watch(dataStationInfoProvider);
-
-    // PageView Component
-    final pageViewerSize = Size(mediaQuery.size.width, 200);
-    final nowTime = DateTime.now();
-
     return Scaffold(
         backgroundColor: Color(0xffefefff),
         body: () {
-                            if (station.hasError) {
-                              return Text(station.error.toString());
-                            }
-          if (!station.hasValue || station.value == null) {
-            return const CircularProgressIndicator();
-          }
-          var stationInfo = station.value!;
           // _tabController = TabController(length: stations.length, vsync: vsync)
 
           return SizedBox(
@@ -72,75 +61,7 @@ class _InnerBusPageState extends ConsumerState<InnerBusPage> {
                   //     onMapReady: mapOnReady,
                   //   ),
                   // ),
-                  SizedBox(
-                      width: pageViewerSize.width,
-                      height: pageViewerSize.height,
-                      child: PageView.builder(
-                          controller: _pageController,
-                          itemCount: stationInfo.length,
-                          itemBuilder: (BuildContext context, int index) {
-                            return Padding(
-                              padding: const EdgeInsets.all(20),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      Text(
-                                        stationInfo[index].name,
-                                        style: const TextStyle(
-                                          fontSize: 24,
-                                          fontWeight: FontWeight.bold,
-                                          color: Color(0xff000000),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 6),
-                                      index <= stationInfo.length - 2
-                                          ? Text(
-                                              "${stationInfo[index + 1].name} 방향",
-                                              style: const TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                                color: Color(0xaa303030),
-                                              ),
-                                            )
-                                          : const SizedBox.shrink()
-                                    ],
-                                  ),
-                                  const Spacer(flex: 1),
-                                  1 == 1 ? // currentTimetable.isEmpty ?
-                                  Container(
-                                      alignment: Alignment.centerRight,
-                                      child: const Text(
-                                          "운행 종료",
-                                          textAlign: TextAlign.end,
-                                          style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w500,
-                                            color: Color(0xff1a1a1a),
-                                          ),
-                                        )
-                                      ) :
-                                  Container(
-                                      alignment: Alignment.centerRight,
-                                      child: Text(
-                                          "0" // "${currentTimetable[0].inHours}:${currentTimetable[0].inMinutes} 후 (N회차 버스) 도착 예정",
-                                          textAlign: TextAlign.end,
-                                          style: const TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w500,
-                                            color: Color(0xff1a1a1a),
-                                          ),
-                                        )
-                                      )    
-
-                                  // HH:MM 분후 (N회차 버스) 도착 예정
-                                  // [버튼] 역방향 정류장 표시
-                                ],
-                              ),
-                            );
-                          }))
+                  RouteCard(pageController: _pageController)
                 ],
               ));
         }());
@@ -180,7 +101,7 @@ class _InnerBusPageState extends ConsumerState<InnerBusPage> {
         NOverlayImage.fromWidget(
           widget: stationTextWidget,
           size: NSize.fromSize(
-            _textSize(station.name, style)  
+            getTextSize(station.name, style)  
           ),
           context: context
         ).then((NOverlayImage overlay) {
@@ -194,14 +115,5 @@ class _InnerBusPageState extends ConsumerState<InnerBusPage> {
         controller.addOverlay(stationOverlay);
       }
     });
-  }
-
-  Size _textSize(String text, TextStyle style) {
-    final TextPainter textPainter = TextPainter(
-        text: TextSpan(text: text, style: style),
-        maxLines: 1,
-        textDirection: TextDirection.ltr)
-      ..layout(minWidth: 0, maxWidth: double.infinity);
-    return textPainter.size;
   }
 }
