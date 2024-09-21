@@ -18,4 +18,19 @@ class StationInfo {
         direction = json['direction'] as int,
         posX = json['posX'] as double,
         posY = json['posY'] as double;
+
+  @override
+  bool operator==(Object other) {
+    if (other is StationInfo) {
+      return (
+        id == other.id &&
+        direction == other.direction &&
+        name == other.name
+      );
+    }
+    return false;
+  }
+
+  @override
+  int get hashCode => Object.hash(id, name, direction);
 }
