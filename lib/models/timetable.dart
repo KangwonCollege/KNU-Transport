@@ -1,18 +1,13 @@
-
 import 'package:flutter/material.dart';
 
 class Timetable extends TimeOfDay {
-  int? sessionIndex; 
+  int? sessionIndex;
 
-  Timetable({
-    required super.hour,
-    required super.minute,
-    this.sessionIndex
-  });
+  Timetable({required super.hour, required super.minute, this.sessionIndex});
 
-  Timetable.fromJson(Map<String, int> json, int? _sessionIndex) 
-    : sessionIndex = _sessionIndex as int,
-    super(hour: json['h'] as int, minute: json['m'] as int);
+  Timetable.fromJson(Map<String, int> json, int? _sessionIndex)
+      : sessionIndex = _sessionIndex as int,
+        super(hour: json['h'] as int, minute: json['m'] as int);
 
   int totalMinute() {
     return hour * 60 + minute;
@@ -24,5 +19,3 @@ class Timetable extends TimeOfDay {
     return thisTotalMinute.compareTo(otherTotalMinute);
   }
 }
-
-

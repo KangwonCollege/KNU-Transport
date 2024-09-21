@@ -1,6 +1,5 @@
 import 'package:flutter/widgets.dart';
 
-
 Size getTextSize(String text, TextStyle style) {
   final TextPainter textPainter = TextPainter(
       text: TextSpan(text: text, style: style),
