@@ -15,9 +15,9 @@ double haversine(double latitude1, double longitude1, double latitude2, double l
   double relativeY = posY1 - posY2;
 
   double distance = (
-    math.pow(math.sin(relativeX) * 0.5, 2)
-     + math.cos(posX1) * math.cos(posX2)
-     * math.pow(math.sin(relativeY) * 0.5, 2)
+    math.pow(math.sin(relativeY) * 0.5, 2)
+     + math.cos(posY1) * math.cos(posY2)
+     * math.pow(math.sin(relativeX) * 0.5, 2)
   );
   return math.asin(math.sqrt(distance)) * earthRadius * 2;
 }
