@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,6 +23,9 @@ class RouteCard extends ConsumerStatefulWidget {
 
 class _RouteCardState extends ConsumerState<RouteCard> {
   bool skeleton = true;
+  Timer? _timer;
+  late TimeOfDay now;
+  late int currentPage = 0;
 
   Widget titleText(String name) {
     const style = TextStyle(
@@ -70,6 +75,28 @@ class _RouteCardState extends ConsumerState<RouteCard> {
               ));
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+    _timer?.cancel();
+  }
+
+  @override
+  void initState() {
+    currentPage = 0;
+    now = TimeOfDay.now();
+    super.initState();
+    _startTimer();
+  }
+
+  void _startTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 10), (timer) {
+      setState(() {
+        now = TimeOfDay.now();
+      });
+    });
+  }
+
   String timetableFormat(Timetable timetable, [TimeOfDay? now]) {
     now = now ?? TimeOfDay.now();
     int nowTotalMinute = now.hour * 60 + now.minute;
@@ -87,9 +114,10 @@ class _RouteCardState extends ConsumerState<RouteCard> {
     final timetable = ref.watch(dataTimetableProvider);
     final station = ref.watch(dataStationInfoProvider);
 
-    if (index != -1 && widget.onPageChanged != null) {
+    if (index != -1 && widget.onPageChanged != null && currentPage != index) {
       widget.onPageChanged!(index);
     }
+    currentPage = index;
 
     // title
     final name = station.value?[index].name ?? "새롬관(회차)";
@@ -100,7 +128,6 @@ class _RouteCardState extends ConsumerState<RouteCard> {
             : "${station.value?[0].name}");
 
     // description
-    TimeOfDay now = TimeOfDay.now();
     var currentTimetable = timetable.hasValue
         ? timetable.value![index]
             .where((element) => element.compareTo(now) >= 0)
