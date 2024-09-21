@@ -4,12 +4,12 @@ import 'package:carousel_slider/carousel_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:knu_transport/models/station_info.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:knu_transport/providers/initalize.dart';
-import 'package:knu_transport/utilities/load_asset.dart';
-import 'package:knu_transport/utilities/text_size.dart';
 import 'package:knu_transport/widgets/inner_bus/route_card.dart';
 import 'package:knu_transport/widgets/inner_bus/route_map.dart';
+import 'package:knu_transport/widgets/multi_floating_button.dart';
 
 class InnerBusPage extends ConsumerStatefulWidget {
   const InnerBusPage({super.key});
@@ -39,49 +39,60 @@ class _InnerBusPageState extends ConsumerState<InnerBusPage> {
     return Scaffold(
         backgroundColor: Color(0xffefefff),
         body: SizedBox(
-              width: pageSize.width,
-              height: pageSize.height,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  RouteMap(onMapReady: (controller) {
+            width: pageSize.width,
+            height: pageSize.height,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                RouteMap(
+                  onMapReady: (controller) {
                     _mapController = controller;
-                  }, floatingButton: Stack(
-                    children: [
-                      Align(
-                        alignment: Alignment(Alignment.bottomRight.x, Alignment.bottomRight.y - 0.4),
-                        child: FloatingActionButton.small(
-                          onPressed: () {},
-                          child: const Icon(
-                            Icons.refresh,
-                            size: 30,
-                          )
-                        ),
-                      ), Align(
-                        alignment: Alignment(Alignment.bottomRight.x, Alignment.bottomRight.y - 0.2),
-                        child: FloatingActionButton.small(
-                          onPressed: () {},
-                          child: const Icon(
-                            Icons.location_on,
-                            size: 30,
-                          )
-                        ),
-                      ), Align(
-                        alignment: Alignment(Alignment.bottomRight.x, Alignment.bottomRight.y),
-                        child: FloatingActionButton.small(
-                          onPressed: () {},
-                          child: const Icon(
-                            Icons.location_on,
-                            size: 30,
-                          )
-                        ),
-                      ),
-                    ],
-                  )),
-                  RouteCard(pageController: _pageController)
-                ],
-              )
-        )
+                  },
+                  floatingButton: MultiFloatingButton(
+                    icon: const [Icons.navigation, Icons.my_location],
+                      onClickListener: (index) {
+                        if (index == 0) followStationEvent();
+                        if (index == 1) getLocationEvnet();
+                      })),
+                RouteCard(pageController: _pageController)
+              ],
+            )));
+  }
+
+  void getLocationEvnet() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      await Fluttertoast.showToast(
+        msg: "위치 설정을 확인해주세요."
+      );
+      return;
+    }
+
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        await Fluttertoast.showToast(
+          msg: "위치 권한을 허용해주세요."
+        );
+        return;
+      }
+    }
+    if (permission == LocationPermission.deniedForever) {
+      await Fluttertoast.showToast(
+        msg: "설정에서 애플리케이션의 위치 권한을 허용해주세요."
+      );
+      return;
+    }
+    print(permission);
+
+    Position position = await Geolocator.getCurrentPosition();
+    await Fluttertoast.showToast(
+      msg: "${position.latitude} ${position.longitude}"
     );
+  }
+
+  void followStationEvent() {
+
   }
 }
