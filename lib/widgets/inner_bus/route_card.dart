@@ -1,3 +1,4 @@
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,7 +8,7 @@ import 'package:knu_transport/providers/initalize.dart';
 import 'package:knu_transport/widgets/text_skeleton.dart';
 
 class RouteCard extends ConsumerStatefulWidget {
-  final PageController pageController;
+  final CarouselSliderController pageController;
 
   const RouteCard({super.key, required this.pageController});
 
@@ -78,7 +79,7 @@ class _RouteCardState extends ConsumerState<RouteCard> {
     }
   }
 
-  Widget item(BuildContext context, int index) {
+  Widget item(BuildContext context, int index, int realIndex) {
     final timetable = ref.watch(dataTimetableProvider);
     final station = ref.watch(dataStationInfoProvider);
 
@@ -87,8 +88,8 @@ class _RouteCardState extends ConsumerState<RouteCard> {
     final direction = index + 2 < (station.value?.length ?? 0)
         ? "${station.value?[index + 1].name}, ${station.value?[index + 2].name}"
         : (index + 1 < (station.value?.length ?? 0)
-            ? station.value![index + 1].name
-            : null);
+            ? "${station.value?[index + 1].name}, ${station.value?[0].name}"
+            : "${station.value?[0].name}");
 
     // description
     TimeOfDay now = TimeOfDay.now();
@@ -108,9 +109,7 @@ class _RouteCardState extends ConsumerState<RouteCard> {
             children: [
               titleText(name),
               const SizedBox(width: 3),
-              direction != null
-                  ? subtitleText(direction)
-                  : const SizedBox.shrink()
+              subtitleText(direction)
             ],
           ),
           const Spacer(flex: 1),
@@ -140,10 +139,14 @@ class _RouteCardState extends ConsumerState<RouteCard> {
         width: pageViewerSize.width,
         height: pageViewerSize.height,
         child: skeleton
-            ? item(context, -1)
-            : PageView.builder(
-                controller: widget.pageController,
+            ? item(context, -1, -1)
+            : CarouselSlider.builder(
+                carouselController: widget.pageController,
+                options: CarouselOptions(
+                  viewportFraction: 1.0
+                ),
                 itemCount: station.value!.length,
-                itemBuilder: item));
+                itemBuilder: item)
+      );
   }
 }
