@@ -6,7 +6,9 @@ import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:knu_transport/models/station_info.dart';
 import 'package:knu_transport/providers/initalize.dart';
+import 'package:knu_transport/utilities/haversine.dart';
 import 'package:knu_transport/widgets/inner_bus/route_card.dart';
 import 'package:knu_transport/widgets/inner_bus/route_map.dart';
 import 'package:knu_transport/widgets/multi_floating_button.dart';
@@ -18,15 +20,20 @@ class InnerBusPage extends ConsumerStatefulWidget {
   _InnerBusPageState createState() => _InnerBusPageState();
 }
 
-class _InnerBusPageState extends ConsumerState<InnerBusPage> {
+class _InnerBusPageState extends ConsumerState<InnerBusPage> {  
   @override
   void initState() {
     super.initState();
     _pageController = CarouselSliderController();
+    currentPage = 0;
+
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => getLocationEvnet(true)
+    );
   }
 
   late CarouselSliderController _pageController;
-  late TabController _tabController;
+  late int currentPage;
   late NaverMapController _mapController;
 
   @override
@@ -54,17 +61,22 @@ class _InnerBusPageState extends ConsumerState<InnerBusPage> {
                         if (index == 0) followStationEvent();
                         if (index == 1) getLocationEvnet();
                       })),
-                RouteCard(pageController: _pageController)
+                RouteCard(
+                  pageController: _pageController,
+                  onPageChanged: (index) => currentPage = index,
+                )
               ],
             )));
   }
 
-  void getLocationEvnet() async {
+  void getLocationEvnet([bool initalize = false]) async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      await Fluttertoast.showToast(
-        msg: "위치 설정을 확인해주세요."
-      );
+      if (initalize) {
+        await Fluttertoast.showToast(
+          msg: "위치 설정을 확인해주세요."
+        );
+      }
       return;
     }
 
@@ -79,20 +91,41 @@ class _InnerBusPageState extends ConsumerState<InnerBusPage> {
       }
     }
     if (permission == LocationPermission.deniedForever) {
-      await Fluttertoast.showToast(
-        msg: "설정에서 애플리케이션의 위치 권한을 허용해주세요."
-      );
+      if (initalize) {
+        await Fluttertoast.showToast(
+          msg: "설정에서 애플리케이션의 위치 권한을 허용해주세요."
+        );
+      }
       return;
     }
-    print(permission);
 
     Position position = await Geolocator.getCurrentPosition();
-    await Fluttertoast.showToast(
-      msg: "${position.latitude} ${position.longitude}"
-    );
+    var stationInfo = ref.watch(dataStationInfoProvider);
+    stationInfo.whenData((List<StationInfo> info) {
+      var newStationinfo = List<StationInfo>.from(info);
+      newStationinfo.sort((a, b) {
+        double p1 = haversine(a.posX, a.posY, position.latitude, position.longitude);
+        double p2 = haversine(b.posX, b.posY, position.latitude, position.longitude);
+        return p1.compareTo(p2);
+      });
+
+      int index = info.indexOf(newStationinfo[0]);
+      _pageController.animateToPage(index);
+    });
   }
 
   void followStationEvent() {
-
+    var stationInfo = ref.watch(dataStationInfoProvider);
+    stationInfo.whenData((List<StationInfo> info) {
+      var cameraPosition = NCameraUpdate.withParams(
+        target: NLatLng(info[currentPage].posX, info[currentPage].posY),
+        zoom: 16
+      );
+      cameraPosition.setAnimation(
+        animation: NCameraAnimation.easing,
+        duration: const Duration(seconds: 2)
+      );
+      _mapController.updateCamera(cameraPosition);
+    });
   }
 }
