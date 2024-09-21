@@ -1,8 +1,6 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:knu_transport/models/station_info.dart';
 import 'package:knu_transport/models/timetable.dart';
 import 'package:knu_transport/providers/initalize.dart';
 import 'package:knu_transport/widgets/text_skeleton.dart';
@@ -45,6 +43,7 @@ class _RouteCardState extends ConsumerState<RouteCard> {
     }
     return Text(
       "${direction} 방향",
+      overflow: TextOverflow.ellipsis,
       style: style,
     );
   }
@@ -142,11 +141,8 @@ class _RouteCardState extends ConsumerState<RouteCard> {
             ? item(context, -1, -1)
             : CarouselSlider.builder(
                 carouselController: widget.pageController,
-                options: CarouselOptions(
-                  viewportFraction: 1.0
-                ),
+                options: CarouselOptions(viewportFraction: 1.0),
                 itemCount: station.value!.length,
-                itemBuilder: item)
-      );
+                itemBuilder: item));
   }
 }
