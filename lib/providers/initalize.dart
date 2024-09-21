@@ -11,9 +11,10 @@ final dataStationInfoProvider = FutureProvider<List<StationInfo>>((ref) async {
 });
 
 final dataRouteInfoProvider = FutureProvider<List<List<double>>>((ref) async {
-  List<List<double>> routeInfo =
-        await loadJson("assets/data/inner_bus/routeInfo.json");
-    return routeInfo;
+  List<dynamic> routeInfo = await loadJson("assets/data/inner_bus/route.json");
+  return routeInfo.map((item) {
+    return List<double>.from(item.cast<double>());
+  }).toList();
 });
 
 final dataTimetableProvider = FutureProvider<List<List<Timetable>>>((ref) async {
