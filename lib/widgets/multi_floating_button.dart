@@ -31,7 +31,7 @@ class MultiFloatingButton extends StatelessWidget {
         children: icon.asMap().entries.map((element) {
       return Align(
           alignment: Alignment(Alignment.bottomRight.x,
-              Alignment.bottomRight.y - (0.2 * element.key)),
+              Alignment.bottomRight.y - (0.3 * element.key)),
           child: floatingButton(element.key));
     }).toList());
   }
