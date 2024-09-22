@@ -59,8 +59,9 @@ class _RouteMapState extends ConsumerState<RouteMap> {
       controller.addOverlay(NPathOverlay(
           id: "inner_bus_route",
           coords: routeInfo.map((x) => NLatLng(x[0], x[1])).toList(),
-          outlineWidth: 0,
-          color: const Color(0xffaab9ff)));
+          outlineWidth: 1,
+          outlineColor: const Color(0xffff8989),
+          color: const Color(0xffff8989)));
     });
 
     // Draw a station to map.
@@ -96,6 +97,9 @@ class _RouteMapState extends ConsumerState<RouteMap> {
             text: stationD0.name,
             style: style,
             position: position.offsetByMeter(northMeter: 15),
+            onClick: widget.onStationClick != null ? (_) { 
+              widget.onStationClick!(controller, station.id); 
+            } : (_){}
           );
           if (reversedStation.name != station.name) {
             addTextOverlay(
@@ -103,7 +107,10 @@ class _RouteMapState extends ConsumerState<RouteMap> {
               id: "inner_bus_station_${stationD1.id}_${stationD1.direction}_text",
               text: stationD1.name,
               style: style,
-              position: position.offsetByMeter(northMeter: 15),
+              position: position.offsetByMeter(northMeter: -20),
+              onClick: widget.onStationClick != null ? (_) { 
+                widget.onStationClick!(controller, station.id); 
+              } : (_){}
             );
           }
         } else {
