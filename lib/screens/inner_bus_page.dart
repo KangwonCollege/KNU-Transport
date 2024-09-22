@@ -8,7 +8,6 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:knu_transport/models/station_info.dart';
 import 'package:knu_transport/providers/initalize.dart';
-import 'package:knu_transport/utilities/haversine.dart';
 import 'package:knu_transport/widgets/inner_bus/route_card.dart';
 import 'package:knu_transport/widgets/inner_bus/route_map.dart';
 import 'package:knu_transport/widgets/multi_floating_button.dart';
@@ -40,6 +39,8 @@ class _InnerBusPageState extends ConsumerState<InnerBusPage> {
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
     final pageSize = Size(mediaQuery.size.width, mediaQuery.size.height);
+
+    final routeInfo = ref.watch(dataRouteInfoProvider);
 
     return Scaffold(
         backgroundColor: Color(0xffefefff),
@@ -113,8 +114,8 @@ class _InnerBusPageState extends ConsumerState<InnerBusPage> {
     stationInfo.whenData((List<StationInfo> info) {
       var newStationinfo = List<StationInfo>.from(info);
       newStationinfo.sort((a, b) {
-        double p1 = haversine(a.posX, a.posY, position.latitude, position.longitude);
-        double p2 = haversine(b.posX, b.posY, position.latitude, position.longitude);
+        double p1 = Geolocator.distanceBetween(a.posX, a.posY, position.latitude, position.longitude);
+        double p2 = Geolocator.distanceBetween(b.posX, b.posY, position.latitude, position.longitude);
         return p1.compareTo(p2);
       });
 
