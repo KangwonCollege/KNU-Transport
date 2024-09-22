@@ -40,8 +40,6 @@ class _InnerBusPageState extends ConsumerState<InnerBusPage> {
     final mediaQuery = MediaQuery.of(context);
     final pageSize = Size(mediaQuery.size.width, mediaQuery.size.height);
 
-    final routeInfo = ref.watch(dataRouteInfoProvider);
-
     return Scaffold(
         backgroundColor: Color(0xffefefff),
         body: SizedBox(
