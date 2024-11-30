@@ -1,0 +1,18 @@
+on:
+  release:
+    types: [ published ]
+  
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install flutter SDK
+        run: |
+          git clone https://github.com/flutter/flutter.git .flutter -b stable
+      - name: Setup flutter SDK
+        run: |
+          ./.flutter/bin/flutter precache
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
